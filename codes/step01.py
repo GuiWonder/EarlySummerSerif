@@ -134,7 +134,7 @@ def ckdlg():
 def getjpv():
 	cmap=font.getBestCmap()
 	jpvar=dict()
-	jpvch=[('𰰨', '芲'), ('𩑠', '頙'), ('鄉', '鄕')]
+	jpvch=[('𰰨', '芲'), ('𩑠', '頙'), ('鄉', '鄕'), ('𥄳', '眔')]
 	for chs in jpvch:
 		if ord(chs[1]) in cmap:
 			jpvar[ord(chs[0])]=cmap[ord(chs[1])]
@@ -233,16 +233,6 @@ def subcff(cfftb, glyphs):
 					  if g in glyphs}
 		fontsub.charset=[g for g in fontsub.charset if g in glyphs]
 		fontsub.numGlyphs=len(fontsub.charset)
-def cffinf():
-	if 'CFF ' in font:
-		cff=font["CFF "]
-		cff.cff.fontNames[0]=cff.cff.fontNames[0].replace('SourceHan', cfg['fontName'].replace(' ', ''))
-		cff.cff[0].FamilyName=cff.cff[0].FamilyName.replace('Source Han', cfg['fontName'])
-		cff.cff[0].FullName=cff.cff[0].FullName.replace('Source Han', cfg['fontName'])
-		cff.cff[0].Notice=cfg['fontCopyright']
-		cff.cff[0].CIDFontVersion=float(cfg['fontVersion'])
-		for dic in cff.cff[0].FDArray:
-			dic.FontName=dic.FontName.replace('SourceHan', cfg['fontName'].replace(' ', ''))
 def subgl():
 	cmap=font.getBestCmap()
 	'''Remove hanguo'''
@@ -538,41 +528,6 @@ def vfname(locn, hw=''):
 	newnane.setName('ExtraLight', 17, 3, 1, 1041)
 	return newnane
 
-def setpun(pzh, loczh):
-	pg=glfrtxt(pzh)
-	rplg=dict()
-	
-	for g1 in pg:
-		assert g1 not in rplg, g1
-		g2=glfrloc(g1, loczh)
-		if g2: rplg[g1]=g2
-	glyrepl(rplg)
-
-	return
-def dfltvt(lng):
-	for posub in ('GSUB', 'GPOS'):
-		vtzh=list()
-		for sr in font[posub].table.ScriptList.ScriptRecord:
-			for lsr in sr.Script.LangSysRecord:
-				if lsr.LangSysTag.strip()==lng:
-					for ki in lsr.LangSys.FeatureIndex:
-						if vtzh: break
-						if font[posub].table.FeatureList.FeatureRecord[ki].FeatureTag=='vert':
-							vtzh=font[posub].table.FeatureList.FeatureRecord[ki].Feature.LookupListIndex
-		for sr in font[posub].table.ScriptList.ScriptRecord:
-			for lsr in sr.Script.DefaultLangSys.FeatureIndex:
-				if font[posub].table.FeatureList.FeatureRecord[lsr].FeatureTag=='vert':
-					font[posub].table.FeatureList.FeatureRecord[lsr].Feature.LookupListIndex=vtzh
-					break
-			for lsr in sr.Script.LangSysRecord:
-					for ki in lsr.LangSys.FeatureIndex:
-						if font[posub].table.FeatureList.FeatureRecord[ki].FeatureTag=='vert':
-							font[posub].table.FeatureList.FeatureRecord[ki].Feature.LookupListIndex=vtzh
-							break
-
-def changeloc():
-	setpun(pzhs+simpcn, loczhs)
-	dfltvt('ZHS')
 
 print('*'*50)
 print('====Build Fonts====\n')
@@ -615,12 +570,9 @@ uvsvar()
 ftuvstab()
 print('Processing radicals...')
 radicv()
-
 ckdlg()
-
 print('Checking for unused glyphs...')
 subgl()
-#changeloc()
 font['name']=mkname('', ithw='')
 print('Saving font...')
 
